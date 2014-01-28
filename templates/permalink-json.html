@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+{% autoescape true %}
+<html>
+    {% for entry in entries %}
+      <blockquote>{{ entry.content }}
+      </blockquote>
+      <br>
+    {% endfor %}
+
+</html>
+{% endautoescape %}
