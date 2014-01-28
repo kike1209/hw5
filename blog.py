@@ -21,8 +21,6 @@ form = '''
 </html>
 '''
 
-POST_No = '5838406743490560'  
-
 def render_str(template, **params):
     t = jinja_env.get_template(template)
     return t.render(params)
@@ -137,20 +135,29 @@ class Post(db.Model):
         self._render_text = self.content.replace('\n', '<br>')
         return render_str("post.html", p = self)
 
+    def render_json(self):
+        self._render_text = self.content.replace('\n', '<br>')
+        return render_str("post_json.html", p = self)
+
+
 class BlogFront(BlogHandler):
     def get(self):
-        posts = greetings = Post.all().order('-created')
+        posts = Post.all().order('-created')
         self.render('front.html', posts = posts)
+
+
+class BlogFrontJson(BlogHandler):
+    def get(self):
+        posts = Post.all().order('-created')
+        self.render('front_json.html', posts = posts)
 
 class PostPage(BlogHandler):
     def get(self, post_id):
         key = db.Key.from_path('Post', int(post_id), parent=blog_key())
         post = db.get(key)
-
         if not post:
             self.error(404)
             return
-        
         self.render("permalink.html", post = post)
 
 class PostPageJson(BlogHandler):
@@ -161,8 +168,6 @@ class PostPageJson(BlogHandler):
             self.error(404)
             return
         self.render("permalink-json.html", post = post)
-        #self.response.write(form)
-        #self.response.write(post.subject)
 
 
 class NewPost(BlogHandler):
@@ -305,11 +310,13 @@ class Welcome(BlogHandler):
         else:
             self.redirect('/unit2/signup')
 
+
 app = webapp2.WSGIApplication([('/', MainPage),
                                ('/unit2/rot13', Rot13),
                                ('/unit2/signup', Unit2Signup),
                                ('/unit2/welcome', Welcome),
                                ('/blog/?', BlogFront),
+                               ('/blog/.json', BlogFrontJson),
                                ('/blog/([0-9]+)', PostPage),
                                ('/blog/([0-9]+)'+'.json', PostPageJson),
                                ('/blog/newpost', NewPost),
